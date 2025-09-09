@@ -2,7 +2,8 @@
 """
 Unauthorized MDM Enrollment Detector
 Purpose: Detects suspicious patterns indicating unauthorized device management enrollment
-Author: Security Research Tool
+Author: SunofvaLLM
+Repository: https://github.com/SunofvaLLM/MDMFraudCheck
 WARNING: This tool is specifically designed to detect potential privacy violations
 """
 
@@ -23,7 +24,7 @@ class UnauthorizedMDMDetector:
         self.suspicious_patterns = []
         self.critical_alerts = []
         self.headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36'
+            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
         }
         
         # Known personal email domains that should NEVER have enterprise management
@@ -46,7 +47,6 @@ class UnauthorizedMDMDetector:
     def detect_apple_mdm_hijacking(self, email):
         """Detect signs of Apple ID MDM hijacking"""
         domain = email.split('@')[1].lower()
-        apple_alerts = []
         
         if domain not in ['icloud.com', 'me.com', 'mac.com']:
             return {'apple_domain': False}
@@ -123,10 +123,10 @@ class UnauthorizedMDMDetector:
         
         # Check for Google Workspace MX records (suspicious for gmail.com)
         try:
-            mx_records = dns.resolver.resolve(domain, 'TXT')
+            txt_records = dns.resolver.resolve(domain, 'TXT')
             workspace_indicators = []
             
-            for record in mx_records:
+            for record in txt_records:
                 record_text = str(record).lower()
                 if 'google-site-verification' in record_text:
                     workspace_indicators.append('Site verification record found')
@@ -467,7 +467,6 @@ def print_unauthorized_mdm_report(evidence):
         print(f"\n🚨 EMERGENCY RESPONSE PLAN")
         print("-" * 50)
         
-        from UnauthorizedMDMDetector import UnauthorizedMDMDetector
         detector = UnauthorizedMDMDetector()
         response_plan = detector.generate_emergency_response_plan(evidence)
         
@@ -476,4 +475,114 @@ def print_unauthorized_mdm_report(evidence):
             print(f"  {action}")
         
         print(f"\n📱 DEVICE CHECKS REQUIRED:")
-        for check in response_plan
+        for check in response_plan['device_checks']:
+            print(f"  • {check}")
+        
+        print(f"\n🔒 ACCOUNT SECURITY STEPS:")
+        for step in response_plan['account_security']:
+            print(f"  • {step}")
+        
+        print(f"\n⚖️ LEGAL ACTIONS:")
+        for legal_step in response_plan['legal_steps']:
+            print(f"  • {legal_step}")
+        
+        print(f"\n📋 EVIDENCE PRESERVATION:")
+        for evidence_step in response_plan['evidence_preservation']:
+            print(f"  • {evidence_step}")
+    
+    elif threat['level'] == 'MODERATE':
+        print(f"\n💡 RECOMMENDED ACTIONS:")
+        print(f"  • Monitor devices for any MDM profiles")
+        print(f"  • Review account settings for unauthorized changes")
+        print(f"  • Enable additional security notifications")
+        print(f"  • Document any suspicious device behavior")
+    
+    print(f"\n" + "="*80)
+    print("🔍 DETECTION METHODOLOGY:")
+    print("This tool analyzes personal email domains for enterprise management")
+    print("indicators that should NOT exist on consumer email services.")
+    print("Critical alerts indicate strong evidence of unauthorized enrollment.")
+    print("="*80)
+    
+    # Legal disclaimer
+    print("\n⚖️ LEGAL NOTICE:")
+    print("Unauthorized device management enrollment may violate:")
+    print("• Computer Fraud and Abuse Act (CFAA)")
+    print("• Electronic Communications Privacy Act (ECPA)")
+    print("• State privacy laws and regulations")
+    print("• International data protection regulations")
+    print("Consult with legal counsel for specific guidance.")
+
+def main():
+    parser = argparse.ArgumentParser(
+        description='Detect unauthorized MDM enrollment on personal email accounts',
+        epilog='Example: python EnrollmentChecker.py your.personal.email@gmail.com'
+    )
+    parser.add_argument('email', help='Personal email address to check for unauthorized enrollment')
+    parser.add_argument('--json', action='store_true', help='Output detailed results in JSON format')
+    parser.add_argument('--save-evidence', help='Save evidence report to file for legal documentation')
+    parser.add_argument('--quiet', '-q', action='store_true', help='Show only threat level and critical alerts')
+    
+    args = parser.parse_args()
+    
+    # Validate this is a personal email domain
+    email = args.email.lower().strip()
+    domain = email.split('@')[1] if '@' in email else ''
+    
+    detector = UnauthorizedMDMDetector()
+    
+    if domain not in detector.PERSONAL_DOMAINS:
+        print(f"⚠️ WARNING: {domain} is not recognized as a major personal email provider.")
+        print(f"This tool is designed for personal accounts on services like:")
+        print(f"  Gmail, iCloud, Outlook.com, Yahoo, etc.")
+        print(f"For corporate domains, use a general email analysis tool instead.")
+        
+        confirm = input(f"\nContinue analysis anyway? (y/N): ").lower()
+        if confirm != 'y':
+            sys.exit(0)
+    
+    # Run unauthorized enrollment detection
+    print(f"🔍 Scanning {email} for unauthorized MDM enrollment...")
+    print(f"🎯 Target: Personal {domain} account")
+    print(f"🚨 Looking for: Enterprise management on consumer email")
+    
+    try:
+        evidence = detector.check_unauthorized_enrollment_evidence(email)
+    except KeyboardInterrupt:
+        print("\n⏹️ Scan interrupted by user")
+        sys.exit(1)
+    except Exception as e:
+        print(f"❌ Scan failed: {str(e)}")
+        sys.exit(1)
+    
+    # Output results
+    if args.json:
+        print(json.dumps(evidence, indent=2))
+    elif args.quiet:
+        threat = evidence['threat_assessment']
+        print(f"\nThreat Level: {threat['level']}")
+        print(f"Assessment: {threat['message']}")
+        if threat['critical_alerts'] > 0:
+            print(f"🚨 {threat['critical_alerts']} CRITICAL alerts found!")
+            print("Run without --quiet for full details and response plan")
+    else:
+        print_unauthorized_mdm_report(evidence)
+    
+    # Save evidence if requested
+    if args.save_evidence:
+        try:
+            with open(args.save_evidence, 'w') as f:
+                json.dump(evidence, f, indent=2)
+            print(f"\n💾 Evidence report saved to: {args.save_evidence}")
+            print("📋 This file can be used for legal documentation")
+        except Exception as e:
+            print(f"❌ Failed to save evidence: {str(e)}")
+    
+    # Final warning for high-threat cases
+    if evidence['threat_assessment']['level'] in ['CRITICAL', 'HIGH']:
+        print(f"\n🚨 CRITICAL PRIVACY VIOLATION DETECTED!")
+        print(f"📞 Consider immediate consultation with privacy attorney")
+        print(f"⚖️ Document everything and preserve evidence")
+
+if __name__ == '__main__':
+    main()
