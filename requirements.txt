@@ -1,0 +1,14 @@
+# MDMFraudCheck - Unauthorized MDM Enrollment Detector
+# Core dependencies for network analysis and DNS lookups
+
+# HTTP requests and web analysis
+requests>=2.31.0
+
+# DNS resolution and analysis
+dnspython>=2.4.0
+
+# Domain WHOIS lookups
+python-whois>=0.8.0
+
+# Enhanced date/time parsing
+python-dateutil>=2.8.0
