@@ -45,9 +45,10 @@ pip install -r requirements.txt
 
 **Requirements (requirements.txt):**
 ```txt
-requests>=2.25.0
-dnspython>=2.1.0  
-python-whois>=0.7.3
+requests>=2.31.0
+dnspython>=2.4.0  
+python-whois>=0.8.0
+python-dateutil>=2.8.0
 ```
 
 ## 🔍 **Usage**
@@ -308,3 +309,4 @@ This tool was developed in response to real-world cases of unauthorized MDM enro
 - **Privacy Violations:** Document with this tool and contact legal authorities
 
 **Star ⭐ this repository if it helped protect your privacy!**
+```
